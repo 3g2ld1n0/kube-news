@@ -6,7 +6,7 @@ pipeline {
         stage('Build Doker Imagem') {
             steps {
                 script {
-                    dockerapp = docker.build("egaldino/kube-news:$(ven.BUILD_ID)", '-f ./src/Dockerfile ./scr')
+                    dockerapp = docker.build("egaldino/kube-news:$(env.BUILD_ID)", '-f ./src/Dockerfile ./scr')
                 }
             }            
         }
@@ -16,14 +16,18 @@ pipeline {
                 script {
                     dockerapp = docker.withRegistry('https://registry.hub.docker.com', 'dockerhub')
                         dockerapp.push('latest')
-                        dockerapp.push("$(ven.BUILD_ID)")
+                        dockerapp.push("$(env.BUILD_ID)")
                 }
             }
         }
 
         state('Deploy Kubernetes') {
+            enviroment {
+                tag_version = "$(env.BUILD_ID)"
+            }
             steps {
                 withKubeConfig([credentialsId: 'kubeconfig']) {
+                    sh ' sed -i "{{TAG}}/$tag_version/g" ./k8s/deployment.yaml'
                     sh ' kubectrl apply -s ./k8s/deployment.yaml'
                 }
             }

@@ -51,7 +51,7 @@ spec:
     spec:
       containers:
       - name: web
-        image: egaldino/kube-news:v1
+        image: egaldino/kube-news:{{TAG}}
         ports:
         - containerPort: 8082
         env: 
